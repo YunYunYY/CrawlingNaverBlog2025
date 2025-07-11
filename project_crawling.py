@@ -18,7 +18,7 @@ encText = urllib.parse.quote("제주 아라동 맛집") #검색어
 url = "https://openapi.naver.com/v1/search/blog?query=" + encText # JSON 결과
 
 #몇 개?
-display=100
+display=20
 url+="&display="+str(display)
 
 request = urllib.request.Request(url)
@@ -68,12 +68,25 @@ if(rescode==200):
         hashtags.append(txthashtag)
 
         #장소 수집
-        
         try:
-            map_name_pic=driver.find_element(By.CSS_SELECTOR,".se-map-title")
-            map_address_pic=driver.find_element(By.CSS_SELECTOR,".se-map-address")
-            location.append(map_name_pic.text)
-            address.append(map_address_pic.text)
+            map_pic=driver.find_element(By.CSS_SELECTOR,"a.se-map-info")
+            map_json = map_pic.get_attribute("data-linkdata")
+            map_json = map_json.replace("&quot;", '"')
+            map_json=json.loads(map_json)
+            print(map_json.get('placeId'))
+            href_value="https://map.naver.com/v5/entry/place/"+map_json.get('placeId')
+            driver.get(href_value)
+            time.sleep(2)
+
+            driver._switch_to.frame('entryIframe')
+
+            location_name=driver.find_element(By.CSS_SELECTOR,".GHAhO")
+            location_address=driver.find_element(By.CSS_SELECTOR,".LDgIH")
+            print(location_name.text)
+            print(location_address.text)
+            location.append(location_name.text)
+            address.append(location_address.text)
+
         except Exception :
             try:
                 link_element = driver.find_element(By.CSS_SELECTOR, ".location a")
@@ -84,12 +97,12 @@ if(rescode==200):
 
                 driver._switch_to.frame('entryIframe')
 
-                map_name=driver.find_element(By.CSS_SELECTOR,".GHAhO")
-                map_address=driver.find_element(By.CSS_SELECTOR,".LDgIH")
-                print(map_name.text)
-                print(map_address.text)
-                location.append(map_name_pic)
-                address.append(map_address_pic)
+                location_name=driver.find_element(By.CSS_SELECTOR,".GHAhO")
+                location_address=driver.find_element(By.CSS_SELECTOR,".LDgIH")
+                print(location_name.text)
+                print(location_address.text)
+                location.append(location_name.text)
+                address.append(location_address.text)
             except Exception:
                 #지도 정보가 없는 것
                 location.append('')
